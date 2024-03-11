@@ -1,0 +1,16 @@
+meta {
+  name: Disconnect
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/disconnect
+  body: none
+  auth: bearer
+}
+
+headers {
+  auth.username: admin
+  auth.session: {{sessionToken}}
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Auth check
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/isAuth
+  body: none
+  auth: none
+}
+
+headers {
+  auth.username: adminaa
+  auth.session: {{sessionToken}}
+}
