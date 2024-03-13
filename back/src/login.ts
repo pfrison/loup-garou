@@ -38,7 +38,8 @@ export function install(app: Express): void {
         // Create session and send its id
         const session: string = createSession(username);
         res.statusCode = 200;
-        res.end(session);
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ sessionId: session }));
         next();
     });
 
@@ -107,7 +108,7 @@ export function install(app: Express): void {
 
     app.get("/isAuth", (req: Request, res: Response, next: NextFunction) => {
         res.statusCode = 200;
-        res.end("You are authenticated as " + req.body.username);
+        res.end();
         next();
     });
 }

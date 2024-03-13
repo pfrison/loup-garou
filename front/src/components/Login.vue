@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { callApi } from "@/scripts/api";
 
 const emit = defineEmits(["onLogin"]);
 
@@ -24,32 +25,16 @@ function doLogin(): void {
 
     // send request
     loginIn.value = true;
-    const requestOptions = {
-        method: "POST",
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            username: username.value,
-            password: password.value
-        })
-    };
-    fetch("http://localhost:8080/login", requestOptions)
-        .then(res => {
-            // do on received
-            loginIn.value = false;
-            if ( !res.ok ) {
-                if ( res.status === 403 )
-                    alert("Wrong username or password");
-                else
-                    alert("Unexpected error from the server");
-                throw new Error("Server responded with code " + res.status + " for /login");
-            }
-            return res.text();
-        }).then(sessionId => {
-            emit("onLogin", sessionId);
-        });
+    callApi("POST", "/login", {
+        username: username.value,
+        password: password.value
+    }, (json: any) => emit("onLogin", { username: username.value, sessionId: json.sessionId }),
+    (errorCode: number) => {
+        if ( errorCode === 403 )
+            alert("Wrong username or password");
+        else
+            alert("Unexpected error from the server");
+    }, () => loginIn.value = false);
 }
 
 function sanitizeCheck(text: string): string | undefined {

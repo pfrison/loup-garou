@@ -1,13 +1,14 @@
 <script setup lang="ts">
+import { type Auth } from '@/scripts/api';
 
-const props = defineProps({
-    sessionId: String
-});
+const props = defineProps<{
+    auth: Auth
+}>();
 
 </script>
 
 <template>
-    <h1>Logged in ! sessionId : {{ sessionId }}</h1>
+    <h1>Logged in ! username : {{ auth.username }}, sessionId : {{ auth.sessionId }}</h1>
 </template>
 
 <style scoped>
