@@ -29,7 +29,7 @@ export function install(app: Express): void {
         // Check if password is good
         const realPassord: string | undefined = getLogin(username);
         if ( ! realPassord || hash(password) !== realPassord  ) {
-            console.warn("USER_ERR on /login : password doesn't match");
+            console.warn("USER_ERR on /login : username or password doesn't match (" + username + ", " + (password.length > 0 ? "***" : "undefined") + ")");
             res.statusCode = 403;
             res.end();
             next();

@@ -1,7 +1,10 @@
-import express, { Express, NextFunction, Request, Response } from "express"
-import * as Login from "./login"
+import express, { Express, NextFunction, Request, Response } from "express";
+import cors from "cors";
+import * as Login from "./login";
 
 const app: Express = express();
+
+app.use(cors());
 
 app.use(express.json());
 
