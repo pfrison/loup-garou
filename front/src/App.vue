@@ -14,7 +14,6 @@ onMounted(() => {
     // Test credentials if any
     if ( localStorage.auth ) {
         loginVerification.value = true;
-        console.log("aaaaaaaaa typeof : " + typeof localStorage.auth);
         const authToTest: Auth = JSON.parse(localStorage.auth);
         callApi("GET", "/isAuth", undefined,
             () => auth.value = authToTest, // success

@@ -52,38 +52,32 @@ function sanitizeCheck(text: string): string | undefined {
     <form @submit.prevent="doLogin">
         <table class="loginBox">
             <tr>
-                <td colspan="2">
+                <td>
                     <h1 class="title centerText">Loup Garou</h1>
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td>
                     <h2 class="subtitle centerText">Activ'IT project 2024</h2>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <label for="username">Username</label>
-                </td>
-                <td>
-                    <input required id="username" type="text" v-model="username" />
+                    <ui-textfield required type="text" v-model="username" style="width: 100%;">Username</ui-textfield>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <label for="password">Password</label>
+                    <ui-textfield required type="password" v-model="password" style="width: 100%;">Password</ui-textfield>
                 </td>
+            </tr>
+            <tr>
                 <td>
-                    <input required id="password" type="password" v-model="password" />
+                    <ui-button raised id="login" class="spaceUp" :disabled="loginIn" @click="doLogin">Login</ui-button>
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
-                    <button id="login" class="spaceUp" :disabled="loginIn">Login</button>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
+                <td>
                     <a class="centerText" href="#">New user ? Register here</a>
                 </td>
             </tr>
@@ -94,9 +88,7 @@ function sanitizeCheck(text: string): string | undefined {
 <style scoped>
 .loginBox {
     padding: 50px;
-    border: 2px solid black;
-    border-radius: 20px;
-    border-color: black;
+    background-color: #F0F0F0;
 }
 .centerText {
     justify-content: center;
@@ -120,5 +112,14 @@ button {
 }
 .spaceUp {
     margin-top: 20px;
+}
+a {
+    font-size: 1.5vmin;
+}
+h1 {
+    font-size: 8vmin;
+}
+h2 {
+    font-size: 4vmin;
 }
 </style>
