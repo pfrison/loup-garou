@@ -8,6 +8,7 @@ const auth = ref({
     username: "",
     sessionId: ""
 });
+const authError = ref(false);
 const loginVerification = ref(false);
 
 onMounted(() => {
@@ -17,7 +18,7 @@ onMounted(() => {
         const authToTest: Auth = JSON.parse(localStorage.auth);
         callApi("GET", "/isAuth", undefined,
             () => auth.value = authToTest, // success
-            () => localStorage.auth = "", // fail
+            () => { localStorage.auth = ""; authError.value = true; }, // fail
             () => loginVerification.value = false, // finally
             authToTest);
     }
@@ -34,7 +35,7 @@ function onLogin(msg: Auth): void {
         <span>Loading...</span>
     </div>
     <Page v-else-if="auth.sessionId" :auth="auth" />
-    <Login v-else class="centered" @onLogin="onLogin"/>
+    <Login v-else class="centered" @onLogin="onLogin" :authError="authError"/>
 </template>
 
 <style scoped>
