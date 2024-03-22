@@ -32,10 +32,12 @@ function emitWith(section: NavBarSection): void {
 <style scoped>
 .navbar {
     vertical-align: center;
-    width: 100%;
     background-color: #F0F0F0;
     display: flex;
     padding: 2vmin;
+    position: sticky;
+    top: 0;
+    z-index: 999;
 }
 .navbarItem {
     margin-right: 1vmin;
