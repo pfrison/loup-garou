@@ -1,0 +1,27 @@
+meta {
+  name: Game info
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/gameInfo?gameId=r4v-siss-vsk
+  body: none
+  auth: none
+}
+
+query {
+  gameId: r4v-siss-vsk
+}
+
+headers {
+  auth.username: toto
+  auth.session: {{sessionToken}}
+}
+
+body:json {
+  {
+    "isPublic": true,
+    "maxPlayers": 6
+  }
+}

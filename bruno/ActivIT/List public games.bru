@@ -1,0 +1,23 @@
+meta {
+  name: List public games
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/listPublicGames
+  body: none
+  auth: none
+}
+
+headers {
+  auth.username: toto
+  auth.session: {{sessionToken}}
+}
+
+body:json {
+  {
+    "isPublic": true,
+    "maxPlayers": 6
+  }
+}

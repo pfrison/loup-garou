@@ -12,12 +12,12 @@ post {
 
 body:json {
   {
-    "username": "admin",
-    "password": "password"
+    "username": "toto",
+    "password": "toto"
   }
   
 }
 
 script:post-response {
-  bru.setEnvVar("sessionToken", res.getBody());
+  bru.setEnvVar("sessionToken", res.getBody().sessionId);
 }

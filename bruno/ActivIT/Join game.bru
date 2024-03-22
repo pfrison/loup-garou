@@ -1,0 +1,27 @@
+meta {
+  name: Join game
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/joinGame?gameId=r4v-siss-vsk
+  body: none
+  auth: none
+}
+
+query {
+  gameId: r4v-siss-vsk
+}
+
+headers {
+  auth.username: toto
+  auth.session: {{sessionToken}}
+}
+
+body:json {
+  {
+    "isPublic": true,
+    "maxPlayers": 6
+  }
+}

@@ -1,6 +1,7 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import * as Login from "./login";
+import * as Games from "./games";
 
 const app: Express = express();
 
@@ -24,6 +25,9 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
 
 // loging page
 Login.install(app);
+
+// games page
+Games.install(app);
 
 // Log request end and/or 404
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

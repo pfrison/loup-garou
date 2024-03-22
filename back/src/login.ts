@@ -2,11 +2,10 @@ import { Express, NextFunction, Request, Response } from "express";
 import fs from "fs";
 import { hash, randHex } from "./crypto";
 import { assertId } from "./sanitize";
+import { DATABASE, DB_EXT } from "./consts";
 
-const DATABASE = "./database/";
 const LOGIN_SAVE = DATABASE + "logins/";
 const SESSION_SAVE = DATABASE + "sessions/";
-const DB_EXT = ".db";
 
 /**
  * This component add endpoints to create logins and session.
