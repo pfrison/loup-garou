@@ -28,13 +28,22 @@ function onLogin(msg: Auth): void {
     auth.value = msg;
     localStorage.auth = JSON.stringify(msg)
 }
+
+function onAuthError() {
+    localStorage.auth = "";
+    authError.value = true;
+    auth.value = {
+        username: "",
+        sessionId: ""
+    }
+}
 </script>
 
 <template>
     <div v-if="loginVerification">
         <span>Loading...</span>
     </div>
-    <Page v-else-if="auth.sessionId" :auth="auth" />
+    <Page v-else-if="auth.sessionId" :auth="auth" @onAuthError="onAuthError"/>
     <Login v-else class="centered" @onLogin="onLogin" :authError="authError"/>
 </template>
 

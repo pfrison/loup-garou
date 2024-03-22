@@ -11,13 +11,13 @@ post {
 }
 
 headers {
-  auth.username: admin
+  auth.username: toto
   auth.session: {{sessionToken}}
 }
 
 body:json {
   {
     "isPublic": true,
-    "maxPlayers": 6
+    "maxPlayers": "6"
   }
 }

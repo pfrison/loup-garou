@@ -16,8 +16,10 @@ export function callApi(method: string, path: string, toSend: any,
             "auth.username": auth ? auth.username : "",
             "auth.session": auth ? auth.sessionId : ""
         },
-        body: JSON.stringify(toSend)
+        body: method === "GET" ? undefined : JSON.stringify(toSend)
     };
+    if ( method === "GET" && toSend )
+        path += "?" + new URLSearchParams(toSend);
     console.log(requestOptions)
     console.log("Trying " + method + " on " + path);
     fetch("http://localhost:8080" + path, requestOptions)

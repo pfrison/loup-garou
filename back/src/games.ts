@@ -28,6 +28,7 @@ export function install(app: Express): void {
                 && !game.players.includes(req.body.username)
             );
         res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(games));
         next();
     });
@@ -39,7 +40,7 @@ export function install(app: Express): void {
             next();
             return;
         }
-        if ( ! req.body.maxPlayers || typeof req.body.maxPlayers !== "number" ) {
+        if ( ! req.body.maxPlayers || typeof req.body.maxPlayers !== "string" ) {
             res.statusCode = 400;
             res.end("maxPlayers is required");
             next();
@@ -54,6 +55,7 @@ export function install(app: Express): void {
         };
         saveGame(game);
         res.statusCode = 201;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({gameId: game.id}));
         next();
     });
@@ -67,7 +69,7 @@ export function install(app: Express): void {
         }
         const game: Game | undefined = getGame(req.query.gameId);
         if ( ! game || game.players.includes(req.body.username) ) {
-            res.statusCode = 400;
+            res.statusCode = 404;
             res.end("game doesn't exist or player is already in it");
             next();
             return;
@@ -88,13 +90,16 @@ export function install(app: Express): void {
         }
         const game: Game | undefined = getGame(req.query.gameId);
         if ( ! game || ! game.players.includes(req.body.username) ) {
-            res.statusCode = 400;
+            res.statusCode = 404;
             res.end("game doesn't exist or player not in it");
             next();
             return;
         }
-        game.players = game.players.filter(a => a !== req.body.username)
-        saveGame(game);
+        game.players = game.players.filter(a => a !== req.body.username);
+        if ( game.players.length <= 0 )
+            deleteGame(game.id);
+        else
+            saveGame(game);
         res.statusCode = 204;
         res.end();
         next();
@@ -115,7 +120,18 @@ export function install(app: Express): void {
             return;
         }
         res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(game));
+        next();
+    });
+
+    app.get("/playerGames", (req: Request, res: Response, next: NextFunction) => {
+        const games: string[] = getAllGames()
+            .filter(game => game.players.includes(req.body.username))
+            .map(game => game.id);
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify(games));
         next();
     });
 }
@@ -152,4 +168,10 @@ function saveGame(game: Game): void {
     if ( ! fs.existsSync(GAMES_SAVE) )
         fs.mkdirSync(GAMES_SAVE, {recursive: true});
     fs.writeFileSync(GAMES_SAVE + game.id + DB_EXT, JSON.stringify(game), "utf8");
+}
+
+function deleteGame(gameId: string): void {
+    if ( ! fs.existsSync(GAMES_SAVE) )
+        fs.mkdirSync(GAMES_SAVE, {recursive: true});
+    fs.rmSync(GAMES_SAVE + gameId + DB_EXT);
 }
