@@ -7,12 +7,12 @@ const props = defineProps<{
     buttonText: string,
     linkText: string,
     message: string,
-    isErrorMessage: boolean
+    hasErrorMessage: boolean
 }>();
 
 const emit = defineEmits(["onLogReg", "onError", "onLinkClick"]);
 
-const loginIn = ref(false);
+const isLoginInProgress = ref(false);
 const username = ref("");
 const password = ref("");
 
@@ -30,16 +30,16 @@ function doLogin(): void {
     }
 
     // send request
-    loginIn.value = true;
+    isLoginInProgress.value = true;
     callApi("POST", props.apiEndpoint, {
         username: username.value,
         password: password.value
-    }, (json: any) => {
-        emit("onLogReg", { username: username.value, sessionId: json?.sessionId });
+    }, () => {
+        emit("onLogReg", username.value);
     }, (errorCode: number) => {
         emit("onError", errorCode);
     }, () => {
-        loginIn.value = false;
+        isLoginInProgress.value = false;
         username.value = "";
         password.value = "";
     });
@@ -69,14 +69,14 @@ function linkClick() {
             <h2 class="subtitle centerText">Activ'IT project 2024</h2>
             <p class="centerText message" :class="{
                     invisible: !message,
-                    errorMessage: isErrorMessage,
-                    okMessage: !isErrorMessage
+                    errorMessage: hasErrorMessage,
+                    okMessage: !hasErrorMessage
                 }">
                     {{ message ? message : "blank" }}
                 </p>
             <ui-textfield required v-model="username" class="textField">Username</ui-textfield>
             <ui-textfield required input-type="password" v-model="password" class="textField">Password</ui-textfield>
-            <ui-button raised id="login" class="spaceUp" :disabled="loginIn" @click="doLogin">{{ buttonText }}</ui-button>
+            <ui-button raised id="login" class="spaceUp" :disabled="isLoginInProgress" @click="doLogin">{{ buttonText }}</ui-button>
             <a class="centerText" href="#" @click="linkClick">{{ linkText }}</a>
         </div>
     </form>

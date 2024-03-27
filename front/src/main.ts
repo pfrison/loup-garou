@@ -6,5 +6,5 @@ import App from './App.vue'
 import BalmUI from 'balm-ui'; // Official Google Material Components
 
 const app = createApp(App)
-app.use(BalmUI)
-app.mount('#app')
+    .use(BalmUI)
+    .mount('#app');

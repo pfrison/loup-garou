@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import LogRegComp from "./LogRegComp.vue";
-import type { Auth } from "@/scripts/api";
 
 const props = defineProps<{
     authError: boolean
@@ -28,13 +27,13 @@ function switchRegister() {
     isErrorMessage.value = false;
 }
 
-function logRegSuccess(auth: Auth) {
+function logRegSuccess(username: string) {
     if ( isRegister.value ) {
         switchRegister();
         message.value = "Successfully registered ! Please login";
         isErrorMessage.value = false;
     } else {
-        emit("onLogin", auth);
+        emit("onLogin", username);
     }
 }
 
@@ -48,7 +47,7 @@ function logRegError(errorCode: number) {
 
 <template>
     <LogRegComp :api-endpoint="getEndpoint(isRegister)" :button-text="getButtonText(isRegister)" :link-text="getLinkText(isRegister)"
-            :message="message" :is-error-message="isErrorMessage"
+            :message="message" :hasErrorMessage="isErrorMessage"
             @on-link-click="switchRegister" @on-log-reg="logRegSuccess" @on-error="logRegError"/>
 </template>
 

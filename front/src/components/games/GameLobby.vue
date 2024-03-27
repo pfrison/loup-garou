@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { callApi, type Auth } from '@/scripts/api';
+import { callApi } from '@/scripts/api';
 import { gameIdPattern, type Game } from '@/scripts/games';
-import { onMounted, ref, type Ref } from 'vue';
-
-const props = defineProps<{
-    auth: Auth
-}>();
+import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 
 const emit = defineEmits(["onAuthError", "onJoin"]);
 
@@ -15,7 +11,7 @@ const createGameInProgress = ref(false);
 
 const publicJoinInProgress = ref(false);
 const publicGames: Ref<Game[]> = ref([]);
-const publicGamesRefreshIntervalId = ref(0);
+const publicGamesRefreshIntervalId: Ref<NodeJS.Timeout | undefined> = ref(undefined);
 
 const privateGameId = ref("");
 const privateJoinInProgress = ref(false);
@@ -39,9 +35,7 @@ function createGame(): void {
             alert("Unexpected error from server, unable to create the game");
     }, () => {
         createGameInProgress.value = false;
-        if ( publicGamesRefreshIntervalId.value !== 0 )
-            clearInterval(publicGamesRefreshIntervalId.value);
-    }, props.auth);
+    });
 }
 
 function sanitizeCreateNumberPlayers(players: number): string | undefined {
@@ -90,10 +84,8 @@ function joinGame(gameId: string, callback: () => void) {
         else
             alert("Unexpected error from server, unable to join the game");
     }, () => {
-        if ( publicGamesRefreshIntervalId.value !== 0 )
-            clearInterval(publicGamesRefreshIntervalId.value);
         callback();
-    }, props.auth);
+    });
 }
 
 function refreshPublicGames() {
@@ -103,17 +95,20 @@ function refreshPublicGames() {
             publicGames.value.push(game);
         });
     }, (errorCode) => {
-        if ( publicGamesRefreshIntervalId.value !== 0 )
-            clearInterval(publicGamesRefreshIntervalId.value);
         if ( errorCode === 403 )
             emit("onAuthError");
-    }, () => {}, props.auth);
+    });
 }
 
 onMounted(() => {
     publicGamesRefreshIntervalId.value = setInterval(refreshPublicGames, 1000);
     refreshPublicGames();
 });
+
+onUnmounted(() => {
+    if ( publicGamesRefreshIntervalId.value )
+        clearInterval(publicGamesRefreshIntervalId.value);
+})
 </script>
 
 <template>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { type Auth } from '@/scripts/api';
-import { NavBarSection } from '@/scripts/consts';
+import { Injects, NavBarSection } from '@/scripts/consts';
+import { inject } from 'vue';
 
+console.log("inject navbar " + inject(Injects.USERNAME));
+const username = inject(Injects.USERNAME);
 const props = defineProps<{
-    auth: Auth,
     selected: NavBarSection
 }>();
-
 const emit = defineEmits(["onNavClick"]);
 
 const onAccount = () => emitWith(NavBarSection.ACCOUNT);
@@ -22,7 +22,7 @@ function emitWith(section: NavBarSection): void {
 <template>
     <div class="navbar">
         <span class="navbarItem navbarTitle">Loup-garou</span>
-        <span class="navbarItem navbarText">{{ auth.username }}</span>
+        <span class="navbarItem navbarText">{{ username }}</span>
         <ui-button :raised="selected === NavBarSection.ACCOUNT" class="navbarItem navbarButton" @click="onAccount">My account</ui-button>
         <ui-button :raised="selected === NavBarSection.GAMES" class="navbarItem navbarButton" @click="onGames">Games</ui-button>
         <ui-button :raised="selected === NavBarSection.SCORES" class="navbarItem navbarButton" @click="onScores">Scores</ui-button>

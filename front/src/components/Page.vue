@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import { type Auth } from '@/scripts/api';
 import NavBar from "./NavBar.vue";
-import AccountSection from "./Account.vue";
-import GamesSection from "./Games.vue";
-import ScoresSection from "./Scores.vue";
-import { NavBarSection } from '@/scripts/consts';
-import { ref } from 'vue';
-
-const props = defineProps<{
-    auth: Auth
-}>();
+import AccountSection from "./account/Account.vue";
+import GamesSection from "./games/Games.vue";
+import ScoresSection from "./scores/Scores.vue";
+import { Injects, NavBarSection } from '@/scripts/consts';
+import { inject, ref } from 'vue';
 
 const emit = defineEmits(["onAuthError"]);
 
@@ -21,9 +16,9 @@ const onAuthError = () => emit("onAuthError");
 </script>
 
 <template>
-    <NavBar :auth="auth" :selected="selectedSection" @on-nav-click="onNavClick" />
-    <AccountSection v-if="selectedSection === NavBarSection.ACCOUNT" class="section" :auth="auth" />
-    <GamesSection v-if="selectedSection === NavBarSection.GAMES" class="section" :auth="auth" @on-auth-error="onAuthError" />
+    <NavBar :selected="selectedSection" @on-nav-click="onNavClick" />
+    <AccountSection v-if="selectedSection === NavBarSection.ACCOUNT" class="section"/>
+    <GamesSection v-if="selectedSection === NavBarSection.GAMES" class="section" @on-auth-error="onAuthError" />
     <ScoresSection v-if="selectedSection === NavBarSection.SCORES" class="section"/>
 </template>
 
@@ -31,4 +26,4 @@ const onAuthError = () => emit("onAuthError");
 .section {
     padding: 8px;
 }
-</style>./GamesLobby.vue
+</style>

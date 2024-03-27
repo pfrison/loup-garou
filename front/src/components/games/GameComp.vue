@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { callApi, type Auth } from '@/scripts/api';
+import { callApi } from '@/scripts/api';
 import type { Game } from '@/scripts/games';
-import { onMounted, ref, type Ref } from 'vue';
+import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 
 const props = defineProps<{
-    auth: Auth,
     gameId: string
 }>();
 
@@ -12,7 +11,7 @@ const emit = defineEmits(["onAuthError", "onLeave"]);
 
 const gameInfo: Ref<Game | undefined> = ref(undefined);
 const unexpectedError = ref(false);
-const RefreshGameInfoIntervalId = ref(0);
+const refreshGameInfoIntervalId: Ref<NodeJS.Timeout | undefined> = ref(undefined);
 const leaveInProgress = ref(false);
 
 function refreshGameInfo(): void {
@@ -22,18 +21,14 @@ function refreshGameInfo(): void {
         unexpectedError.value = false;
         gameInfo.value = json;
     }, (errorCode) => {
-        if ( RefreshGameInfoIntervalId.value !== 0 )
-            clearInterval(RefreshGameInfoIntervalId.value);
         if ( errorCode === 403 )
             emit("onAuthError");
         else
             unexpectedError.value = true;
-    }, () => {}, props.auth);
+    });
 }
 
 function leave(): void {
-    if ( RefreshGameInfoIntervalId.value !== 0 )
-        clearInterval(RefreshGameInfoIntervalId.value);
     callApi("GET", "/leaveGame", {
         gameId: props.gameId
     }, () => {
@@ -43,13 +38,18 @@ function leave(): void {
             emit("onAuthError");
         else
             alert("Unexpected error from the server. Unable to leave the game");
-    }, () => {}, props.auth);
+    });
 }
 
 onMounted(() => {
-    RefreshGameInfoIntervalId.value = setInterval(refreshGameInfo, 1000);
+    refreshGameInfoIntervalId.value = setInterval(refreshGameInfo, 1000);
     refreshGameInfo();
 });
+
+onUnmounted(() => {
+    if ( refreshGameInfoIntervalId.value )
+        clearInterval(refreshGameInfoIntervalId.value);
+})
 </script>
 
 <template>

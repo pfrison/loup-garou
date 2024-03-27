@@ -1,41 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import Login from "./components/Login.vue";
+import { ref, onMounted, provide, inject } from "vue";
+import Login from "./components/login/Login.vue";
 import Page from "./components/Page.vue";
-import { callApi, type Auth } from "./scripts/api";
+import { callApi } from "./scripts/api";
+import { Injects } from "./scripts/consts";
 
-const auth = ref({
-    username: "",
-    sessionId: ""
-});
+const username = ref("");
 const authError = ref(false);
 const loginVerification = ref(false);
+provide(Injects.USERNAME, username);
 
 onMounted(() => {
-    // Test credentials if any
-    if ( localStorage.auth ) {
-        loginVerification.value = true;
-        const authToTest: Auth = JSON.parse(localStorage.auth);
-        callApi("GET", "/isAuth", undefined,
-            () => auth.value = authToTest, // success
-            () => { localStorage.auth = ""; authError.value = true; }, // fail
-            () => loginVerification.value = false, // finally
-            authToTest);
-    }
+    // Test credentials
+    loginVerification.value = true;
+    callApi("GET", "/isAuth", undefined,
+        (json: any) => username.value = json.username, // success
+        () => { localStorage.auth = ""; authError.value = true; }, // fail
+        () => loginVerification.value = false); // finally
 });
 
-function onLogin(msg: Auth): void {
-    auth.value = msg;
-    localStorage.auth = JSON.stringify(msg)
+function onLogin(username_: string): void {
+    username.value = username_;
 }
 
 function onAuthError() {
-    localStorage.auth = "";
     authError.value = true;
-    auth.value = {
-        username: "",
-        sessionId: ""
-    }
+    username.value = "";
 }
 </script>
 
@@ -43,7 +33,7 @@ function onAuthError() {
     <div v-if="loginVerification">
         <span>Loading...</span>
     </div>
-    <Page v-else-if="auth.sessionId" :auth="auth" @onAuthError="onAuthError"/>
+    <Page v-else-if="username" @onAuthError="onAuthError"/>
     <Login v-else class="centered" @onLogin="onLogin" :authError="authError"/>
 </template>
 

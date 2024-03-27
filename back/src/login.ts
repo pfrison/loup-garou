@@ -36,9 +36,11 @@ export function install(app: Express): void {
         }
         // Create session and send its id
         const session: string = createSession(username);
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ sessionId: session }));
+        const expire = new Date();
+        expire.setHours(expire.getHours() + 12);
+        res.statusCode = 204;
+        res.cookie("token", { username: username, session: session }, { httpOnly: true, expires: expire });
+        res.end();
         next();
     });
 
@@ -70,28 +72,39 @@ export function install(app: Express): void {
 
     // Check session middle ware
     app.all("*", (req: Request, res: Response, next: NextFunction) => {
-        if ( ! res.writableEnded ) {
-            req.body.isAuth = false;
-            const username: string | undefined = req.get("auth.username");
-            const session: string | undefined = req.get("auth.session");
+        if ( !res.writableEnded ) {
+            const sessionCookie = req.cookies.token;
+            if ( !sessionCookie ) {
+                console.warn("USER_ERR on authentification : No session cookie provided)");
+                res.statusCode = 403;
+                res.end();
+                next("auth Error");
+                return;
+            }
+            const username: string | undefined = sessionCookie.username;
+            const session: string | undefined = sessionCookie.session;
             // Sanitize
             if ( !username || !session || !assertId(username) || !assertId(session) ) {
                 console.warn("USER_ERR on authentification : username or session not sanitized (" + username + ", " + (!session?.length ? "undefined" : session.length > 0 ? "***" : "undefined") + ")");
-                res.statusCode = 400;
+                res.statusCode = 403;
                 res.end();
                 next("auth Error");
                 return;
             }
             // Check session
             const realSession: string | undefined = getSession(username);
-            if ( ! realSession || session !== realSession ) {
+            if ( !realSession || session !== realSession ) {
                 console.warn("USER_ERR on authentification : session doesn't match");
                 res.statusCode = 403;
                 res.end();
                 next("auth Error");
                 return;
             }
-            req.body.isAuth = true;
+            // Refresh session
+            const expire = new Date();
+            expire.setHours(expire.getHours() + 12);
+            res.cookie("token", { username: username, session: session }, { httpOnly: true, expires: expire });
+            // Set username from session for other middlewares
             req.body.username = username;
         }
         next();
@@ -107,7 +120,8 @@ export function install(app: Express): void {
 
     app.get("/isAuth", (req: Request, res: Response, next: NextFunction) => {
         res.statusCode = 200;
-        res.end();
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ username: req.body.username }));
         next();
     });
 }

@@ -2,27 +2,24 @@
 type Callback = (result: any) => void;
 type ErrorCallback = (errorCode: number) => void;
 type FinallyCallback = () => void;
-export type Auth = {username: string, sessionId: string};
 
 export function callApi(method: string, path: string, toSend: any,
         callback: Callback, errorCallback: ErrorCallback,
-        finallyCallback?: FinallyCallback, auth?: Auth): void {
+        finallyCallback?: FinallyCallback): void {
     method = method.toUpperCase();
-    const requestOptions = {
+    const requestOptions: any = {
         method: method,
         headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-            "auth.username": auth ? auth.username : "",
-            "auth.session": auth ? auth.sessionId : ""
+            "Content-Type": "application/json"
         },
+        credentials: "include",
         body: method === "GET" ? undefined : JSON.stringify(toSend)
     };
     if ( method === "GET" && toSend )
         path += "?" + new URLSearchParams(toSend);
     console.log(requestOptions)
     console.log("Trying " + method + " on " + path);
-    fetch("http://localhost:8080" + path, requestOptions)
+    fetch("http://127.0.0.1:8080" + path, requestOptions)
         .then(res => {
             if ( !res.ok ) {
                 errorCallback(res.status);

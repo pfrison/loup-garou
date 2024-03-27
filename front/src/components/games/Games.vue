@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import { callApi, type Auth } from '@/scripts/api';
+import { callApi } from '@/scripts/api';
 import { onMounted, ref } from 'vue';
 import GameLobby from './GameLobby.vue';
 import GameComp from './GameComp.vue';
-
-const props = defineProps<{
-    auth: Auth
-}>();
 
 const emit = defineEmits(["onAuthError"]);
 
@@ -23,14 +19,14 @@ onMounted(() => {
     }, (errorCode) => {
         if ( errorCode === 403 )
             emit("onAuthError");
-    }, () => {}, props.auth);
+    });
 });
 </script>
 
 <template>
     <div>
-        <GameLobby v-if="!gameId" :auth="auth" @on-join="onJoin" @on-auth-error="onAuthError"/>
-        <GameComp v-if="gameId" :auth="auth" :game-id="gameId" @on-auth-error="onAuthError" @on-leave="onLeave"/>
+        <GameLobby v-if="!gameId" @on-join="onJoin" @on-auth-error="onAuthError"/>
+        <GameComp v-if="gameId" :game-id="gameId" @on-auth-error="onAuthError" @on-leave="onLeave"/>
     </div>
 </template>
 

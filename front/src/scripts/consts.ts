@@ -4,3 +4,7 @@ export enum NavBarSection {
     GAMES,
     SCORES
 }
+
+export enum Injects {
+    USERNAME = "username"
+}
