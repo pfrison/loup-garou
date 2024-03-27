@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import LogRegComp from "./LogRegComp.vue";
+import LoginForm from "./LoginForm.vue";
+import RegisterForm from "./RegisterForm.vue";
 
 const props = defineProps<{
     authError: boolean
@@ -10,45 +11,47 @@ const emit = defineEmits(["onLogin"]);
 
 const isRegister = ref(false);
 const message = ref("");
-const isErrorMessage = ref(false);
-
-const getEndpoint   = (isRegister: boolean) => isRegister ? "/register"                    : "/login"                  ;
-const getButtonText = (isRegister: boolean) => isRegister ? "Register"                     : "Login"                   ;
-const getLinkText   = (isRegister: boolean) => isRegister ? "Have an account ? Login here" : "New user ? Register here";
+const hasErrorMessage = ref(false);
 
 if ( props.authError ) {
     message.value = "You have been logged out";
-    isErrorMessage.value = true;
+    hasErrorMessage.value = true;
 }
 
-function switchRegister() {
+function switchIsRegister() {
     isRegister.value = !isRegister.value;
     message.value = "";
-    isErrorMessage.value = false;
+    hasErrorMessage.value = false;
 }
 
-function logRegSuccess(username: string) {
-    if ( isRegister.value ) {
-        switchRegister();
-        message.value = "Successfully registered ! Please login";
-        isErrorMessage.value = false;
-    } else {
-        emit("onLogin", username);
-    }
+function loginSuccess(username: string) {
+    emit("onLogin", username);
 }
 
-function logRegError(errorCode: number) {
+function registerSuccess() {
+    switchIsRegister();
+    message.value = "Successfully registered ! Please login";
+    hasErrorMessage.value = false;
+}
+
+function loginError(errorCode: number) {
     if ( errorCode === 403 )
-        alert(isRegister.value ? "Username already exist" : "Wrong username or password");
+        alert("Wrong username or password");
+    else
+        alert("Unexpected error from the server");
+}
+
+function RegisterError(errorCode: number) {
+    if ( errorCode === 403 )
+        alert("Username already exist");
     else
         alert("Unexpected error from the server");
 }
 </script>
 
 <template>
-    <LogRegComp :api-endpoint="getEndpoint(isRegister)" :button-text="getButtonText(isRegister)" :link-text="getLinkText(isRegister)"
-            :message="message" :hasErrorMessage="isErrorMessage"
-            @on-link-click="switchRegister" @on-log-reg="logRegSuccess" @on-error="logRegError"/>
+    <RegisterForm v-if="isRegister" @on-link-click="switchIsRegister" @on-register="registerSuccess" @on-error="RegisterError"/>
+    <LoginForm v-else :message="message" :has-error-message="hasErrorMessage" @on-link-click="switchIsRegister" @on-login="loginSuccess" @on-error="loginError"/>
 </template>
 
 <style scoped>

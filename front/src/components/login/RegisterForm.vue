@@ -2,21 +2,13 @@
 import { ref } from "vue";
 import { callApi } from "@/scripts/api";
 
-const props = defineProps<{
-    apiEndpoint: string,
-    buttonText: string,
-    linkText: string,
-    message: string,
-    hasErrorMessage: boolean
-}>();
+const emit = defineEmits(["onRegister", "onError", "onLinkClick"]);
 
-const emit = defineEmits(["onLogReg", "onError", "onLinkClick"]);
-
-const isLoginInProgress = ref(false);
+const isRegisterInProgress = ref(false);
 const username = ref("");
 const password = ref("");
 
-function doLogin(): void {
+function doRegister(): void {
     // sanitize
     let errorSanitize = sanitizeCheck(username.value);
     if ( errorSanitize ) {
@@ -30,18 +22,16 @@ function doLogin(): void {
     }
 
     // send request
-    isLoginInProgress.value = true;
-    callApi("POST", props.apiEndpoint, {
+    isRegisterInProgress.value = true;
+    callApi("POST", "/register", {
         username: username.value,
         password: password.value
     }, () => {
-        emit("onLogReg", username.value);
+        emit("onRegister");
     }, (errorCode: number) => {
         emit("onError", errorCode);
     }, () => {
-        isLoginInProgress.value = false;
-        username.value = "";
-        password.value = "";
+        isRegisterInProgress.value = false;
     });
 }
 
@@ -56,28 +46,20 @@ function sanitizeCheck(text: string): string | undefined {
 }
 
 function linkClick() {
-    username.value = "";
-    password.value = "";
     emit("onLinkClick");
 }
 </script>
 
 <template>
-    <form @submit.prevent="doLogin">
+    <form @submit.prevent="doRegister">
         <div class="loginBox">
             <h1 class="title centerText">Loup Garou</h1>
             <h2 class="subtitle centerText">Activ'IT project 2024</h2>
-            <p class="centerText message" :class="{
-                    invisible: !message,
-                    errorMessage: hasErrorMessage,
-                    okMessage: !hasErrorMessage
-                }">
-                    {{ message ? message : "blank" }}
-                </p>
+            <p class="centerText message invisible">blank</p>
             <ui-textfield required v-model="username" class="textField">Username</ui-textfield>
             <ui-textfield required input-type="password" v-model="password" class="textField">Password</ui-textfield>
-            <ui-button raised id="login" class="spaceUp" :disabled="isLoginInProgress" @click="doLogin">{{ buttonText }}</ui-button>
-            <a class="centerText" href="#" @click="linkClick">{{ linkText }}</a>
+            <ui-button raised id="login" class="spaceUp" :disabled="isRegisterInProgress" @click="doRegister">Register</ui-button>
+            <a class="centerText" href="#" @click="linkClick">Have an account ? Login here</a>
         </div>
     </form>
 </template>
@@ -122,12 +104,6 @@ h2 {
 }
 .message {
     margin-top: 0;
-}
-.errorMessage {
-    color: #ce3a3a;
-}
-.okMessage {
-    color: #3c703c;
 }
 .invisible {
     visibility: hidden;
