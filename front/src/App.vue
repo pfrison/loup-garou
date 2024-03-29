@@ -16,7 +16,7 @@ onMounted(() => {
     loginVerification.value = true;
     callApi("GET", "/isAuth", undefined,
         (json: any) => username.value = json.username, // success
-        () => { localStorage.auth = ""; authError.value = true; }, // fail
+        () => authError.value = true, // fail
         () => loginVerification.value = false); // finally
 });
 

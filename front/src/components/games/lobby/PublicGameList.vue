@@ -11,7 +11,7 @@ const emit = defineEmits(["onItemClick"]);
 <template>
     <div class="listParent">
         <ul v-for="game in games" @click="emit('onItemClick', game.id)">
-            <span>Game by {{ game.players[0] }} ({{ game.players.length }}/{{ game.maxPlayers }} players)</span>
+            <span>Game by {{ game.players[0].name }} ({{ game.players.length }}/{{ game.maxPlayers }} players)</span>
         </ul>
     </div>
 </template>
