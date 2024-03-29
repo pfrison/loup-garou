@@ -49,7 +49,7 @@ onMounted(() => {
 onUnmounted(() => {
     if ( refreshGameInfoIntervalId.value )
         clearInterval(refreshGameInfoIntervalId.value);
-})
+});
 </script>
 
 <template>

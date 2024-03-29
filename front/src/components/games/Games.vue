@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { callApi } from '@/scripts/api';
 import { onMounted, ref } from 'vue';
-import GameLobby from './GameLobby.vue';
-import GameComp from './GameComp.vue';
+import GameLobby from './lobby/GameLobby.vue';
+import GameComp from './main/GameComp.vue';
 
 const emit = defineEmits(["onAuthError"]);
 
@@ -25,10 +25,17 @@ onMounted(() => {
 
 <template>
     <div>
-        <GameLobby v-if="!gameId" @on-join="onJoin" @on-auth-error="onAuthError"/>
+        <GameLobby v-if="!gameId" class="centered" @on-join="onJoin" @on-auth-error="onAuthError"/>
         <GameComp v-if="gameId" :game-id="gameId" @on-auth-error="onAuthError" @on-leave="onLeave"/>
     </div>
 </template>
 
 <style scoped>
+.centered {
+    margin: 0 auto;
+    min-height: 85vh; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 </style>

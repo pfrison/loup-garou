@@ -30,8 +30,11 @@ function onAuthError() {
 </script>
 
 <template>
-    <div v-if="loginVerification">
-        <span>Loading...</span>
+    <div v-if="loginVerification" class="centered">
+        <div class="grid">
+            <ui-spinner active class="marginAuto"></ui-spinner>
+            <span>Authentification attempt in progress...</span>
+        </div>
     </div>
     <Page v-else-if="username" @onAuthError="onAuthError"/>
     <Login v-else class="centered" @onLogin="onLogin" :authError="authError"/>
@@ -44,5 +47,11 @@ function onAuthError() {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+.grid {
+    display: grid;
+}
+.marginAuto{
+    margin: auto;
 }
 </style>
