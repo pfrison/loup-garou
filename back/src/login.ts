@@ -113,7 +113,7 @@ export function install(app: Express): void {
     app.get("/disconnect", (req: Request, res: Response, next: NextFunction) => {
         const username: string = req.body.username;
         clearSession(username);
-        res.statusCode = 200;
+        res.statusCode = 204;
         res.end();
         next();
     });

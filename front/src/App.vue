@@ -4,6 +4,7 @@ import Login from "./components/login/Login.vue";
 import Page from "./components/Page.vue";
 import { callApi } from "./scripts/api";
 import { Injects } from "./scripts/consts";
+import WaitingCircle from "./components/shared/WaitingCircle.vue"
 
 const username = ref("");
 const authError = ref(false);
@@ -27,17 +28,17 @@ function onAuthError() {
     authError.value = true;
     username.value = "";
 }
+
+function onDisconnect() {
+    authError.value = false;
+    username.value = "";
+}
 </script>
 
 <template>
-    <div v-if="loginVerification" class="centered">
-        <div class="grid">
-            <ui-spinner active class="marginAuto"></ui-spinner>
-            <span>Authentification attempt in progress...</span>
-        </div>
-    </div>
-    <Page v-else-if="username" @onAuthError="onAuthError"/>
-    <Login v-else class="centered" @onLogin="onLogin" :authError="authError"/>
+    <WaitingCircle v-if="loginVerification" :message="'Authentification attempt in progress...'" />
+    <Page v-else-if="username" @onAuthError="onAuthError" @on-disconnect="onDisconnect" />
+    <Login v-else class="centered" @onLogin="onLogin" :authError="authError" />
 </template>
 
 <style scoped>

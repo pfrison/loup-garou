@@ -35,6 +35,7 @@ Games.install(app);
 
 // Log request end and/or 404
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.log(err);
     console.log("Request " + req.method + " on " + req.url + " ended with " + res.statusCode);
 });
 app.use((req: Request, res: Response, next: NextFunction) => {

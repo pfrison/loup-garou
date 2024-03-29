@@ -4,7 +4,7 @@ import { DATABASE, DB_EXT } from "./consts";
 
 const GAMES_SAVE = DATABASE + "games/";
 
-enum State {
+enum GameState {
     CREATED,
     IN_PROGRESS,
     ENDED
@@ -13,9 +13,20 @@ enum State {
 type Game = {
     id: string,
     public: boolean,
-    players: string[],
+    players: Player[],
     maxPlayers: number,
-    state: State
+    state: GameState
+}
+
+enum PlayerRole {
+    VILLAGER,
+    WEREWOLF
+}
+
+type Player = {
+    name: string,
+    alive: boolean,
+    role: PlayerRole | undefined
 }
 
 export function install(app: Express): void {
@@ -23,9 +34,9 @@ export function install(app: Express): void {
         const games: Game[] = getAllGames()
             .filter(game => 
                 game.public
-                && game.state === State.CREATED
+                && game.state === GameState.CREATED
                 && game.players.length < game.maxPlayers
-                && !game.players.includes(req.body.username)
+                && game.players.filter(player => player.name === req.body.username).length <= 0
             );
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
@@ -34,7 +45,7 @@ export function install(app: Express): void {
     });
 
     app.post("/createGame", (req: Request, res: Response, next: NextFunction) => {
-        if ( ! req.body.isPublic || typeof req.body.isPublic !== "boolean" ) {
+        if ( req.body.isPublic === undefined || typeof req.body.isPublic !== "boolean" ) {
             res.statusCode = 400;
             res.end("isPublic is required");
             next();
@@ -49,9 +60,13 @@ export function install(app: Express): void {
         const game: Game = {
             id: createId(),
             public: req.body.isPublic,
-            players: [req.body.username],
+            players: [{
+                name: req.body.username,
+                alive: true,
+                role: undefined
+            }],
             maxPlayers: req.body.maxPlayers,
-            state: State.CREATED
+            state: GameState.CREATED
         };
         saveGame(game);
         res.statusCode = 201;
@@ -68,13 +83,17 @@ export function install(app: Express): void {
             return;
         }
         const game: Game | undefined = getGame(req.query.gameId);
-        if ( ! game || game.players.includes(req.body.username) ) {
+        if ( ! game || game.players.filter(player => player.name === req.body.username).length > 0 ) {
             res.statusCode = 404;
             res.end("game doesn't exist or player is already in it");
             next();
             return;
         }
-        game.players.push(req.body.username);
+        game.players.push({
+            name: req.body.username,
+            alive: true,
+            role: undefined
+        });
         saveGame(game);
         res.statusCode = 204;
         res.end();
@@ -89,13 +108,13 @@ export function install(app: Express): void {
             return;
         }
         const game: Game | undefined = getGame(req.query.gameId);
-        if ( ! game || ! game.players.includes(req.body.username) ) {
+        if ( ! game || game.players.filter(player => player.name === req.body.username).length <= 0 ) {
             res.statusCode = 404;
             res.end("game doesn't exist or player not in it");
             next();
             return;
         }
-        game.players = game.players.filter(a => a !== req.body.username);
+        game.players = game.players.filter(player => player.name !== req.body.username);
         if ( game.players.length <= 0 )
             deleteGame(game.id);
         else
@@ -119,6 +138,11 @@ export function install(app: Express): void {
             next();
             return;
         }
+        // Mask roles to avoid cheating
+        game.players = game.players.map(player => {
+            player.role = undefined;
+            return player;
+        });
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(game));
@@ -127,11 +151,53 @@ export function install(app: Express): void {
 
     app.get("/playerGames", (req: Request, res: Response, next: NextFunction) => {
         const games: string[] = getAllGames()
-            .filter(game => game.players.includes(req.body.username))
+            .filter(game => game.players.filter(player => player.name === req.body.username).length > 0)
             .map(game => game.id);
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(games));
+        next();
+    });
+
+    app.get("/startGame", (req: Request, res: Response, next: NextFunction) => {
+        if ( ! req.query.gameId || typeof req.query.gameId !== "string" ) {
+            res.statusCode = 400;
+            res.end("gameId is required");
+            next();
+            return;
+        }
+        const game: Game | undefined = getGame(req.query.gameId);
+        if ( ! game || ! game.players[0].name === req.body.username ) {
+            res.statusCode = 404;
+            res.end("game doesn't exist or player not the game admin");
+            next();
+            return;
+        }
+        game.state = GameState.IN_PROGRESS;
+        attributeRoles(game);
+        saveGame(game);
+        res.statusCode = 204;
+        res.end();
+        next();
+    });
+
+    app.get("/playerRole", (req: Request, res: Response, next: NextFunction) => {
+        if ( ! req.query.gameId || typeof req.query.gameId !== "string" ) {
+            res.statusCode = 400;
+            res.end("gameId is required");
+            next();
+            return;
+        }
+        const game: Game | undefined = getGame(req.query.gameId);
+        if ( ! game || game.players.filter(player => player.name === req.body.username).length <= 0 ) {
+            res.statusCode = 404;
+            res.end("game doesn't exist or player not in it");
+            next();
+            return;
+        }
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ role: game.players.filter(player => player.name === req.body.username)[0].role }));
         next();
     });
 }
@@ -174,4 +240,27 @@ function deleteGame(gameId: string): void {
     if ( ! fs.existsSync(GAMES_SAVE) )
         fs.mkdirSync(GAMES_SAVE, {recursive: true});
     fs.rmSync(GAMES_SAVE + gameId + DB_EXT);
+}
+
+function attributeRoles(game: Game) {
+    const players: number = game.players.length;
+    let werewolves: number;
+    if ( players < 5 )
+        werewolves = 1;
+    else if ( players < 12 )
+        werewolves = 2;
+    else
+        werewolves = 3;
+    const villagers: number = players - werewolves;
+    let remainingIndexes: number[] = Array.from(game.players.keys());
+    for (let i = 0; i < werewolves; i++) {
+        const rand = Math.floor(Math.random() * remainingIndexes.length);
+        game.players[remainingIndexes[rand]].role = PlayerRole.WEREWOLF;
+        remainingIndexes = remainingIndexes.filter(index => index !== remainingIndexes[rand]);
+    }
+    for (let i = 0; i < villagers; i++) {
+        const rand = Math.floor(Math.random() * remainingIndexes.length);
+        game.players[remainingIndexes[rand]].role = PlayerRole.VILLAGER;
+        remainingIndexes = remainingIndexes.filter(index => index !== remainingIndexes[rand]);
+    }
 }

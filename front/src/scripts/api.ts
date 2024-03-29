@@ -21,6 +21,7 @@ export function callApi(method: string, path: string, toSend: any,
     console.log("Trying " + method + " on " + path);
     fetch("http://127.0.0.1:8080" + path, requestOptions)
         .then(res => {
+            console.log(res);
             if ( !res.ok ) {
                 errorCallback(res.status);
                 throw new Error("Server responded with code " + res.status + " for " + method + " " + path);

@@ -68,7 +68,7 @@ function linkClick() {
                     {{ message ? message : "blank" }}
                 </p>
             <ui-textfield required v-model="username" class="textField">Username</ui-textfield>
-            <ui-textfield required input-type="password" v-model="password" class="textField">Password</ui-textfield>
+            <ui-textfield required input-type="password" v-model="password" class="textField spaceUp">Password</ui-textfield>
             <ui-button raised id="login" class="spaceUp" :disabled="isLoginInProgress" @click="doLogin">Login</ui-button>
             <a class="centerText" href="#" @click="linkClick">New user ? Register here</a>
         </div>

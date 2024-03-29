@@ -57,7 +57,7 @@ function linkClick() {
             <h2 class="subtitle centerText">Activ'IT project 2024</h2>
             <p class="centerText message invisible">blank</p>
             <ui-textfield required v-model="username" class="textField">Username</ui-textfield>
-            <ui-textfield required input-type="password" v-model="password" class="textField">Password</ui-textfield>
+            <ui-textfield required input-type="password" v-model="password" class="textField spaceUp">Password</ui-textfield>
             <ui-button raised id="login" class="spaceUp" :disabled="isRegisterInProgress" @click="doRegister">Register</ui-button>
             <a class="centerText" href="#" @click="linkClick">Have an account ? Login here</a>
         </div>

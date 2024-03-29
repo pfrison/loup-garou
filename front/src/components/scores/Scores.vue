@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { type Auth } from '@/scripts/api';
-
 </script>
 
 <template>
-    <p>Scores page</p>
+    <div class="padding">
+        <p>Scores page</p>
+    </div>
 </template>
 
 <style scoped>
+.padding {
+    padding: 8px;
+}
 </style>
