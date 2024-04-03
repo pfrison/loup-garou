@@ -15,7 +15,7 @@ const username: Ref<string> | undefined = inject(Injects.USERNAME);
 </script>
 
 <template>
-    <div class="logPanel">
+    <div>
         <WaitingCircle v-if="!gameInfo || playerRole === undefined" :message="'Fetching game informations...'" />
         <div v-else class="logMessages">
             <span>Started game with id : {{ gameInfo?.id }}</span>
@@ -25,10 +25,6 @@ const username: Ref<string> | undefined = inject(Injects.USERNAME);
 </template>
 
 <style scoped>
-.logPanel {
-    flex-grow: 1;
-    padding: 10px;
-}
 .logMessages {
     display: grid;
 }

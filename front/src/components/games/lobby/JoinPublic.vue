@@ -3,17 +3,19 @@ import { callApi } from '@/scripts/api';
 import { type Game } from '@/scripts/games';
 import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 import PublicGameList from './PublicGameList.vue';
+import type { AccountInfos } from '@/scripts/accounts';
 
 const emit = defineEmits(["onAuthError", "onJoin"]);
 
-const publicJoinInProgress = ref(false);
-const publicGames: Ref<Game[]> = ref([]);
-const publicGamesRefreshIntervalId: Ref<NodeJS.Timeout | undefined> = ref(undefined);
+const joinInProgress = ref(false);
+const games: Ref<Game[]> = ref([]);
+const accountInfos: Ref<AccountInfos[]> = ref([]);
+const gamesRefreshIntervalId: Ref<NodeJS.Timeout | undefined> = ref(undefined);
 
 function joinPublic(gameId: string): void {
-    if ( publicJoinInProgress.value === true )
+    if ( joinInProgress.value === true )
         return;
-    publicJoinInProgress.value = true;
+    joinInProgress.value = true;
     callApi("GET", "/joinGame", {
         gameId: gameId
     }, () => {
@@ -26,16 +28,26 @@ function joinPublic(gameId: string): void {
         else
             alert("Unexpected error from server, unable to join the game");
     }, () => {
-        publicJoinInProgress.value = false
+        joinInProgress.value = false
     });
 }
 
 function refreshPublicGames() {
     callApi("GET", "/listPublicGames", undefined, (json) => {
-        publicGames.value = [];
-        json.forEach((game: Game) => {
-            publicGames.value.push(game);
-        });
+        games.value = json as Game[];
+        const players: string[] =  games.value.map(game => game.players[0].name)
+                // filter already searched account infos
+                .filter(player => !accountInfos.value.map(a => a.username).includes(player));
+        if ( players.length > 0 ) {
+            callApi("GET", "/accountsInfos", {
+                users: players
+            }, (json) => {
+                accountInfos.value = json as AccountInfos[];
+            }, (errorCode) => {
+                if ( errorCode === 403 )
+                    emit("onAuthError");
+            });
+        }
     }, (errorCode) => {
         if ( errorCode === 403 )
             emit("onAuthError");
@@ -43,13 +55,13 @@ function refreshPublicGames() {
 }
 
 onMounted(() => {
-    publicGamesRefreshIntervalId.value = setInterval(refreshPublicGames, 1000);
+    gamesRefreshIntervalId.value = setInterval(refreshPublicGames, 1000);
     refreshPublicGames();
 });
 
 onUnmounted(() => {
-    if ( publicGamesRefreshIntervalId.value )
-        clearInterval(publicGamesRefreshIntervalId.value);
+    if ( gamesRefreshIntervalId.value )
+        clearInterval(gamesRefreshIntervalId.value);
 });
 </script>
 
@@ -58,8 +70,8 @@ onUnmounted(() => {
         <h2 class="centerText">Join a public game</h2>
         <p>Select to join a public game created by other players</p>
         <form class="flex">
-            <p v-if="publicGames.length <= 0">No public game found...</p>
-            <PublicGameList :games="publicGames" @on-item-click="joinPublic" />
+            <p v-if="games.length <= 0">No public game found...</p>
+            <PublicGameList :games="games" :account-infos="accountInfos" @on-item-click="joinPublic" />
         </form>
     </div>
 </template>

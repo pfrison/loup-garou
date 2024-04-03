@@ -3,6 +3,7 @@ import fs from "fs";
 import { hash, randHex } from "./crypto";
 import { assertId } from "./sanitize";
 import { DATABASE, DB_EXT } from "./consts";
+import { buildNewAccountInfo } from "./accounts";
 
 const LOGIN_SAVE = DATABASE + "logins/";
 const SESSION_SAVE = DATABASE + "sessions/";
@@ -65,6 +66,8 @@ export function install(app: Express): void {
         }
         // Create login
         createLogin(username, password);
+        // Create account info
+        buildNewAccountInfo(username);
         res.statusCode = 201;
         res.end();
         next();

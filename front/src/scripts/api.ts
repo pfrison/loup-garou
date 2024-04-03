@@ -28,6 +28,8 @@ export function callApi(method: string, path: string, toSend: any,
             }
             if ( res.headers.get("Content-Type") === "application/json" )
                 return res.json();
+            if ( res.headers.get("Content-Type") === "image/png" )
+                return res.blob();
             return undefined;
         }).then(callback)
         .finally(() => {

@@ -6,7 +6,9 @@ export enum NavBarSection {
 }
 
 export enum Injects {
-    USERNAME = "username"
+    USERNAME = "username",
+    PROFILE_PICTURE = "profilePicture",
+    ACCOUNT_INFOS = "accountInfos"
 }
 
 export enum GameLobbySelection {

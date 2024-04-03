@@ -11,7 +11,7 @@ const username: Ref<string> | undefined = inject(Injects.USERNAME);
 </script>
 
 <template>
-    <div class="playerPanel">
+    <div>
         <div v-if="gameInfo">
             <h2 v-if="gameInfo.state === GameState.CREATED">Players {{ gameInfo.players.length }}/{{ gameInfo.maxPlayers }}</h2>
             <h2 v-else>Players</h2>
@@ -23,11 +23,6 @@ const username: Ref<string> | undefined = inject(Injects.USERNAME);
 </template>
 
 <style scoped>
-.playerPanel {
-    border-right: solid #F0F0F0 5px;
-    width: 10%;
-    padding: 10px;
-}
 ul {
     padding-left: 5px;
 }

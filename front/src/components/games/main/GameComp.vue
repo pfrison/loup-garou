@@ -60,9 +60,9 @@ onUnmounted(() => {
 
 <template>
     <div class="flex">
-        <PlayerPanel :game-info="gameInfo" />
-        <StartGamePanel v-if="gameInfo?.state === GameState.CREATED" :game-info="gameInfo" @on-auth-error="emit('onAuthError')" @on-leave="emit('onLeave')" />
-        <GameLogPanel v-else :game-info="gameInfo" :player-role="playerRole" />
+        <PlayerPanel class="playerPanel" :game-info="gameInfo" />
+        <StartGamePanel class="logPanel" v-if="gameInfo?.state === GameState.CREATED" :game-info="gameInfo" @on-auth-error="emit('onAuthError')" @on-leave="emit('onLeave')" />
+        <GameLogPanel class="logPanel" v-else :game-info="gameInfo" :player-role="playerRole" />
     </div>
 </template>
 
@@ -72,5 +72,14 @@ onUnmounted(() => {
     height: 100%;
     width: 100%;
     position: fixed;
+}
+.logPanel {
+    flex-grow: 1;
+    padding: 10px;
+}
+.playerPanel {
+    border-right: solid #F0F0F0 5px;
+    width: 10%;
+    padding: 10px;
 }
 </style>
