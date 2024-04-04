@@ -3,13 +3,14 @@ import { callApi } from '@/scripts/api';
 import { type Game } from '@/scripts/games';
 import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 import PublicGameList from './PublicGameList.vue';
-import type { AccountInfos } from '@/scripts/accounts';
+import { blobToDataURL, type AccountInfos, type ProfilePicture } from '@/scripts/accounts';
 
 const emit = defineEmits(["onAuthError", "onJoin"]);
 
 const joinInProgress = ref(false);
 const games: Ref<Game[]> = ref([]);
 const accountInfos: Ref<AccountInfos[]> = ref([]);
+const profilePictures: Ref<ProfilePicture[]> = ref([]);
 const gamesRefreshIntervalId: Ref<NodeJS.Timeout | undefined> = ref(undefined);
 
 function joinPublic(gameId: string): void {
@@ -47,6 +48,16 @@ function refreshPublicGames() {
                 if ( errorCode === 403 )
                     emit("onAuthError");
             });
+            players.forEach(player => {
+                callApi("GET", "/profilePicture", {
+                    user: player
+                }, (blob: Blob) => {
+                    blobToDataURL(blob).then(picture => profilePictures.value.push({ username: player, image: picture }));
+                }, (errorCode) => {
+                    if ( errorCode === 403 )
+                        emit("onAuthError");
+                });
+            });
         }
     }, (errorCode) => {
         if ( errorCode === 403 )
@@ -71,7 +82,7 @@ onUnmounted(() => {
         <p>Select to join a public game created by other players</p>
         <form class="flex">
             <p v-if="games.length <= 0">No public game found...</p>
-            <PublicGameList :games="games" :account-infos="accountInfos" @on-item-click="joinPublic" />
+            <PublicGameList :games="games" :account-infos="accountInfos" @on-item-click="joinPublic" :profile-pictures="profilePictures" />
         </form>
     </div>
 </template>

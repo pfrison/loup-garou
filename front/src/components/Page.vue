@@ -6,7 +6,7 @@ import GamesSection from "./games/Games.vue";
 import ScoresSection from "./scores/Scores.vue";
 import { Injects, NavBarSection } from '@/scripts/consts';
 import { inject, onMounted, provide, ref, type Ref } from 'vue';
-import type { AccountInfos } from "@/scripts/accounts";
+import { blobToDataURL, type AccountInfos } from "@/scripts/accounts";
 
 const emit = defineEmits(["onAuthError", "onDisconnect"]);
 
@@ -23,9 +23,7 @@ provide(Injects.ACCOUNT_INFOS, accountInfos);
 
 onMounted(() => {
     callApi("GET", "/profilePicture", undefined, (blob: Blob) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => profilePicture.value = reader.result as string
+        blobToDataURL(blob).then(picture => profilePicture.value = picture);
     }, (errorCode) => {
         if ( errorCode === 403 )
             emit("onAuthError");
@@ -42,8 +40,8 @@ onMounted(() => {
 <template>
     <NavBar :selected="selectedSection" @on-nav-click="onNavClick" />
     <AccountSection v-if="selectedSection === NavBarSection.ACCOUNT" @on-disconnect="onDisconnect" @on-auth-error="onAuthError" />
-    <GamesSection v-if="selectedSection === NavBarSection.GAMES" @on-auth-error="onAuthError" />
-    <ScoresSection v-if="selectedSection === NavBarSection.SCORES" />
+    <GamesSection v-else-if="selectedSection === NavBarSection.GAMES" @on-auth-error="onAuthError" />
+    <ScoresSection v-else-if="selectedSection === NavBarSection.SCORES" />
 </template>
 
 <style scoped>

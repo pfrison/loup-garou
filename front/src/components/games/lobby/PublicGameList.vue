@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import UsernameIconPair from '@/components/shared/UsernameIconPair.vue';
-import type { AccountInfos } from '@/scripts/accounts';
+import type { AccountInfos, ProfilePicture } from '@/scripts/accounts';
 import type { Game } from '@/scripts/games';
 
 const props = defineProps<{
     games: Game[],
-    accountInfos: AccountInfos[]
+    accountInfos: AccountInfos[],
+    profilePictures: ProfilePicture[]
 }>();
 
 const emit = defineEmits(["onItemClick", "onAuthError"]);
@@ -14,7 +15,9 @@ const emit = defineEmits(["onItemClick", "onAuthError"]);
 <template>
     <div class="listParent">
         <ul v-for="game in games" @click="emit('onItemClick', game.id)">
-            <span>Game by <UsernameIconPair :accountInfos="accountInfos.find(i => i.username === game.players[0].name)" :image="undefined"/> ({{ game.players.length }}/{{ game.maxPlayers }} players)</span>
+            <span>Game by <UsernameIconPair
+                :accountInfos="accountInfos.find(i => i.username === game.players[0].name)"
+                :image="profilePictures.find(i => i.username === game.players[0].name)?.image"/> ({{ game.players.length }}/{{ game.maxPlayers }} players)</span>
         </ul>
     </div>
 </template>
