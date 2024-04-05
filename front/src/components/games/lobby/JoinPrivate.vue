@@ -3,7 +3,7 @@ import { callApi } from '@/scripts/api';
 import { gameIdPattern, type Game } from '@/scripts/games';
 import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 
-const emit = defineEmits(["onAuthError", "onJoin"]);
+const emit = defineEmits(["onAuthError", "onJoin", "onCancel"]);
 
 const privateGameId = ref("");
 const privateJoinInProgress = ref(false);
@@ -41,25 +41,17 @@ function sanitizeGameId(gameId: string): string | undefined {
 </script>
 
 <template>
-    <div class="grid">
-        <ui-button>Return</ui-button>
-        <h2 class="centerText">Join a private game</h2>
-        <p>Enter the code of a private game to join</p>
-        <form class="flex">
-            <ui-textfield helper-text-id="privateHelper" v-model="privateGameId" required>Private game code</ui-textfield>
-            <ui-textfield-helper id="privateHelper" visible class="rowSpace">xxx-xxxx-xxx</ui-textfield-helper>
-            <ui-button raised @click="joinPrivate" :disabled="privateJoinInProgress">Join a private game</ui-button>
-        </form>
-    </div>
+    <ui-button icon="arrow_back" class="backButton" @click="emit('onCancel')"></ui-button>
+    <h2 class="centerText">Join a private game</h2>
+    <p>Enter the code of a private game to join</p>
+    <form class="flex">
+        <ui-textfield helper-text-id="privateHelper" v-model="privateGameId" required>Private game code</ui-textfield>
+        <ui-textfield-helper id="privateHelper" visible class="rowSpace">xxx-xxxx-xxx</ui-textfield-helper>
+        <ui-button raised @click="joinPrivate" :disabled="privateJoinInProgress">Join a private game</ui-button>
+    </form>
 </template>
 
 <style scoped>
-.grid {
-    padding: 50px;
-    background-color: #F0F0F0;
-    display: grid;
-    width: 30%;
-}
 .flex {
     display: inline-grid;
 }
@@ -69,5 +61,9 @@ function sanitizeGameId(gameId: string): string | undefined {
 .centerText {
     justify-content: center;
     display: flex;
+}
+.backButton {
+    width: min-content;
+    position: absolute;
 }
 </style>

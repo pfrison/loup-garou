@@ -22,12 +22,20 @@ function onJoin(gameId: string) {
 
 <template>
     <div>
-        <GameLobbyMenu v-if="menuSelection === undefined" @on-selection="changeSelection" />
-        <CreateGame v-else-if="menuSelection === GameLobbySelection.CREATE_GAME" @on-auth-error="emit('onAuthError')" @on-create="onJoin" @on-cancel="menuSelection = undefined" />
-        <JoinPublic v-else-if="menuSelection === GameLobbySelection.JOIN_PUBLIC" @on-auth-error="emit('onAuthError')" @on-join="onJoin" @on-cancel="menuSelection = undefined" />
-        <JoinPrivate v-else-if="menuSelection === GameLobbySelection.JOIN_PRIVATE" @on-auth-error="emit('onAuthError')" @on-join="onJoin" @on-cancel="menuSelection = undefined" />
+        <div class="grid">
+            <GameLobbyMenu v-if="menuSelection === undefined" @on-selection="changeSelection" />
+            <CreateGame v-else-if="menuSelection === GameLobbySelection.CREATE_GAME" @on-auth-error="emit('onAuthError')" @on-create="onJoin" @on-cancel="menuSelection = undefined" />
+            <JoinPublic v-else-if="menuSelection === GameLobbySelection.JOIN_PUBLIC" @on-auth-error="emit('onAuthError')" @on-join="onJoin" @on-cancel="menuSelection = undefined" />
+            <JoinPrivate v-else-if="menuSelection === GameLobbySelection.JOIN_PRIVATE" @on-auth-error="emit('onAuthError')" @on-join="onJoin" @on-cancel="menuSelection = undefined" />
+        </div>
     </div>
 </template>
 
 <style scoped>
+.grid {
+    padding: 50px;
+    background-color: #F0F0F0;
+    display: grid;
+    width: 30%;
+}
 </style>

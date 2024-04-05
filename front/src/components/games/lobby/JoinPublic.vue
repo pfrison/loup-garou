@@ -5,7 +5,7 @@ import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 import PublicGameList from './PublicGameList.vue';
 import { blobToDataURL, type AccountInfos, type ProfilePicture } from '@/scripts/accounts';
 
-const emit = defineEmits(["onAuthError", "onJoin"]);
+const emit = defineEmits(["onAuthError", "onJoin", "onCancel"]);
 
 const joinInProgress = ref(false);
 const games: Ref<Game[]> = ref([]);
@@ -77,23 +77,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="grid">
-        <h2 class="centerText">Join a public game</h2>
-        <p>Select to join a public game created by other players</p>
-        <form class="flex">
-            <p v-if="games.length <= 0">No public game found...</p>
-            <PublicGameList :games="games" :account-infos="accountInfos" @on-item-click="joinPublic" :profile-pictures="profilePictures" />
-        </form>
-    </div>
+    <ui-button icon="arrow_back" class="backButton" @click="emit('onCancel')"></ui-button>
+    <h2 class="centerText">Join a public game</h2>
+    <p>Select to join a public game created by other players</p>
+    <form class="flex">
+        <p v-if="games.length <= 0">No public game found...</p>
+        <PublicGameList :games="games" :account-infos="accountInfos" @on-item-click="joinPublic" :profile-pictures="profilePictures" />
+    </form>
 </template>
 
 <style scoped>
-.grid {
-    padding: 50px;
-    background-color: #F0F0F0;
-    display: grid;
-    width: 30%;
-}
 .flex {
     display: inline-grid;
 }
@@ -103,5 +96,9 @@ onUnmounted(() => {
 .centerText {
     justify-content: center;
     display: flex;
+}
+.backButton {
+    width: min-content;
+    position: absolute;
 }
 </style>

@@ -18,17 +18,36 @@ function disconnect(): void {
 </script>
 
 <template>
-    <div class="padding grid">
-        <p>Account page for <UsernameIconPair :accountInfos="accountInfos" :image="profilePicture"/></p>
-        <ui-button raised @click="disconnect">Disconnect</ui-button>
+    <div class="centered">
+        <div class="grid">
+            <h1 class="centerText">Your account</h1>
+            <p>With you current profile picture, others will see you like this : <UsernameIconPair :accountInfos="accountInfos" :image="profilePicture"/></p>
+            <ui-button raised @click="disconnect">Disconnect</ui-button>
+        </div>
     </div>
 </template>
 
 <style scoped>
-.padding {
-    padding: 8px;
+.centered {
+    margin: 0 auto;
+    min-height: 85vh; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.grid {
+.grid {
+    padding: 50px;
+    background-color: #F0F0F0;
     display: grid;
+    width: 30%;
+}
+h1 {
+    text-transform: uppercase;
+    margin-top: 0;
+    padding-top: 0;
+}
+.centerText {
+    justify-content: center;
+    display: flex;
 }
 </style>
