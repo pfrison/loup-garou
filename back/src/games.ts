@@ -20,7 +20,9 @@ type Game = {
 
 enum PlayerRole {
     VILLAGER,
-    WEREWOLF
+    WEREWOLF,
+    WITCH,
+    SEER
 }
 
 type Player = {
@@ -181,7 +183,7 @@ export function install(app: Express): void {
         next();
     });
 
-    app.get("/playerRole", (req: Request, res: Response, next: NextFunction) => {
+    app.get("/playerRoles", (req: Request, res: Response, next: NextFunction) => {
         if ( ! req.query.gameId || typeof req.query.gameId !== "string" ) {
             res.statusCode = 400;
             res.end("gameId is required");
@@ -195,9 +197,16 @@ export function install(app: Express): void {
             next();
             return;
         }
+        let roles: Player[] = [];
+        const player: Player = game.players.find(player => player.name === req.body.username) as Player;
+        if ( player.role === PlayerRole.WEREWOLF ) {
+            roles = game.players.filter(player => player.role === PlayerRole.WEREWOLF);
+        } else {
+            roles = [ player ];
+        }
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ role: game.players.filter(player => player.name === req.body.username)[0].role }));
+        res.end(JSON.stringify(roles));
         next();
     });
 }

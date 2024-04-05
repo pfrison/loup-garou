@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { callApi } from '@/scripts/api';
-import { PlayerRole, type Game, GameState } from '@/scripts/games';
+import { type Game, GameState, type Player } from '@/scripts/games';
 import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 import PlayerPanel from './PlayerPanel.vue';
 import StartGamePanel from './StartGamePanel.vue';
@@ -16,7 +16,7 @@ const emit = defineEmits(["onAuthError", "onLeave"]);
 const gameInfo: Ref<Game | undefined> = ref(undefined);
 const accountInfos: Ref<AccountInfos[]> = ref([]);
 const profilePictures: Ref<ProfilePicture[]> = ref([]);
-const playerRole: Ref<PlayerRole | undefined> = ref(undefined);
+const playerRoles: Ref<Player[]> = ref([]);
 const refreshGameInfoIntervalId: Ref<NodeJS.Timeout | undefined> = ref(undefined);
 
 function refreshGameInfo(): void {
@@ -55,11 +55,11 @@ function refreshGameInfo(): void {
     });
 }
 
-function getPlayerRole() {
-    callApi("GET", "/playerRole", {
+function getPlayerRoles() {
+    callApi("GET", "/playerRoles", {
         gameId: props.gameId
     }, (json) => {
-        playerRole.value = json.role;
+        playerRoles.value = json;
     }, (errorCode) => {
         if ( errorCode === 403 )
             emit("onAuthError");
@@ -69,7 +69,7 @@ function getPlayerRole() {
 let previousGameState: GameState | undefined = undefined;
 function watchForGameState() {
     if ( previousGameState !== gameInfo.value?.state && gameInfo.value?.state === GameState.IN_PROGRESS ) {
-        getPlayerRole();
+        getPlayerRoles();
     }
     previousGameState = gameInfo.value?.state;
 }
@@ -89,7 +89,7 @@ onUnmounted(() => {
     <div class="flex">
         <PlayerPanel class="playerPanel" :game-info="gameInfo" :account-infos="accountInfos" :profile-pictures="profilePictures" />
         <StartGamePanel class="logPanel" v-if="gameInfo?.state === GameState.CREATED" :game-info="gameInfo" @on-auth-error="emit('onAuthError')" @on-leave="emit('onLeave')" />
-        <GameLogPanel class="logPanel" v-else :game-info="gameInfo" :player-role="playerRole" />
+        <GameLogPanel class="logPanel" v-else :game-info="gameInfo" :player-roles="playerRoles" />
     </div>
 </template>
 

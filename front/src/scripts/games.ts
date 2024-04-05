@@ -15,7 +15,9 @@ export type Game = {
 
 export enum PlayerRole {
     VILLAGER,
-    WEREWOLF
+    WEREWOLF,
+    WITCH,
+    SEER
 }
 
 export const PlayerRoleText: Map<PlayerRole, string> = new Map([
