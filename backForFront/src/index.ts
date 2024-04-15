@@ -34,10 +34,10 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
 Login.install(app);
 
 // games page
-Games.install(app);
+//Games.install(app);
 
 // account page
-Account.install(app);
+//Account.install(app);
 
 // Log request end and/or 404
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

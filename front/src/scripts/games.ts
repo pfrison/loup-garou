@@ -5,12 +5,28 @@ export enum GameState {
     ENDED
 }
 
+export enum GameLogType {
+    DAY,
+    NIGTH,
+    VOTE_WEREWOLVES,
+    VOTE_EXECUTION,
+    VOTE_MAYOR,
+    WITCH_POTION
+}
+
+export type GameLog = {
+    type: GameLogType,
+    params: any[]
+}
+
 export type Game = {
     id: string,
     public: boolean,
     players: Player[],
     maxPlayers: number,
-    state: GameState
+    state: GameState,
+    logs: GameLog[],
+    seerViewed: boolean
 }
 
 export enum PlayerRole {

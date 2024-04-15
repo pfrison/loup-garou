@@ -10,12 +10,50 @@ enum GameState {
     ENDED
 }
 
+enum GameSubState {
+    VOTE_EXECUTION,
+    VOTE_MAYOR,
+    VOTE_WEREWOLVES,
+    WITCH_CHOICE
+}
+
+enum GameLogType {
+    DAY,
+    NIGTH,
+    VOTE_WEREWOLVES,
+    VOTE_EXECUTION,
+    VOTE_MAYOR,
+    WITCH_POTION
+}
+
+type GameLog = {
+    type: GameLogType,
+    params: any[]
+}
+
 type Game = {
     id: string,
     public: boolean,
     players: Player[],
     maxPlayers: number,
-    state: GameState
+    state: GameState,
+    subState: GameSubState,
+    logs: GameLog[],
+    seerViewed: boolean,
+    votes: Vote[],
+    witchPotions: WitchPotion
+}
+
+type Vote = {
+    from: Player,
+    for: Player
+}
+
+enum WitchPotion {
+    NONE,
+    LIFE,
+    DEATH,
+    BOTH
 }
 
 enum PlayerRole {
@@ -68,7 +106,12 @@ export function install(app: Express): void {
                 role: undefined
             }],
             maxPlayers: req.body.maxPlayers,
-            state: GameState.CREATED
+            state: GameState.CREATED,
+            subState: GameSubState.VOTE_WEREWOLVES,
+            logs: [],
+            votes: [],
+            seerViewed: false,
+            witchPotions: WitchPotion.BOTH
         };
         saveGame(game);
         res.statusCode = 201;
@@ -88,6 +131,12 @@ export function install(app: Express): void {
         if ( ! game || game.players.filter(player => player.name === req.body.username).length > 0 ) {
             res.statusCode = 404;
             res.end("game doesn't exist or player is already in it");
+            next();
+            return;
+        }
+        if ( game.state !== GameState.CREATED ) {
+            res.statusCode = 400;
+            res.end("game already started");
             next();
             return;
         }
@@ -113,6 +162,12 @@ export function install(app: Express): void {
         if ( ! game || game.players.filter(player => player.name === req.body.username).length <= 0 ) {
             res.statusCode = 404;
             res.end("game doesn't exist or player not in it");
+            next();
+            return;
+        }
+        if ( game.state !== GameState.CREATED ) {
+            res.statusCode = 400;
+            res.end("game already started");
             next();
             return;
         }
@@ -208,6 +263,36 @@ export function install(app: Express): void {
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(roles));
         next();
+    });
+
+    app.post("/playerAction", (req: Request, res: Response, next: NextFunction) => {
+        if ( ! req.query.gameId || typeof req.query.gameId !== "string" ) {
+            res.statusCode = 400;
+            res.end("gameId is required");
+            next();
+            return;
+        }
+        const game: Game | undefined = getGame(req.query.gameId);
+        const player: Player | undefined = game?.players.find(player => player.name === req.body.username);
+        if ( ! game || ! player ) {
+            res.statusCode = 404;
+            res.end("game doesn't exist or player not in it");
+            next();
+            return;
+        }
+        if ( game.state !== GameState.IN_PROGRESS ) {
+            res.statusCode = 400;
+            res.end("game not in progress");
+            next();
+            return;
+        }
+        if ( player.alive ) {
+            res.statusCode = 400;
+            res.end("You are dead, cannot perform action");
+            next();
+            return;
+        }
+        
     });
 }
 

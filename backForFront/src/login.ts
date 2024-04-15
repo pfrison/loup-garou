@@ -1,22 +1,10 @@
 import { Express, NextFunction, Request, Response } from "express";
-import fs from "fs";
-import { hash, randHex } from "./crypto";
-import { assertId } from "./sanitize";
-import { DATABASE, DB_EXT } from "./consts";
-import { buildNewAccountInfo } from "./accounts";
-
-const LOGIN_SAVE = DATABASE + "logins/";
-const SESSION_SAVE = DATABASE + "sessions/";
-
-/**
- * This component add endpoints to create logins and session.
- * As well as a middle ware to check if the user is authenticated on all other pages.
- * Use the function isAuth to check if the user is authenticated before doing anything.
- */
+import { BACKFRONT_BASEURL, DATABASE, DB_EXT } from "./consts";
+import axios, { AxiosError } from "axios";
 
 export function install(app: Express): void {
     app.post("/login", (req: Request, res: Response, next: NextFunction) => {
-        const username: string = req.body?.username;
+        /*const username: string = req.body?.username;
         const password: string = req.body?.password;
         // Sanitize
         if ( !assertId(username) || !assertId(password) ) {
@@ -42,11 +30,26 @@ export function install(app: Express): void {
         res.statusCode = 204;
         res.cookie("token", { username: username, session: session }, { httpOnly: true, expires: expire });
         res.end();
-        next();
+        next();*/
+
+        axios.post(BACKFRONT_BASEURL + "/login", req.body)
+                .then((ares) => {
+                    const token: string = ares.data.token;
+                    const expire = new Date();
+                    expire.setHours(expire.getHours() + 12);
+                    res.statusCode = 204;
+                    res.cookie("token", token, { httpOnly: true, expires: expire });
+                    res.end();
+                    next();
+                }).catch((error: Error | AxiosError) => {
+                    res.statusCode = (axios.isAxiosError(error) && error.status) ? error.status : 500;
+                    res.end();
+                    next();
+                });
     });
 
     app.post("/register", (req: Request, res: Response, next: NextFunction) => {
-        const username: string = req.body?.username;
+        /*const username: string = req.body?.username;
         const password: string = req.body?.password;
         // Sanitize
         if ( !assertId(username) || !assertId(password) ) {
@@ -70,13 +73,24 @@ export function install(app: Express): void {
         buildNewAccountInfo(username);
         res.statusCode = 201;
         res.end();
-        next();
+        next();*/
+
+        axios.post(BACKFRONT_BASEURL + "/register", req.body)
+                .then((ares) => {
+                    res.statusCode = ares.status;
+                    res.end();
+                    next();
+                }).catch((error: Error | AxiosError) => {
+                    res.statusCode = (axios.isAxiosError(error) && error.status) ? error.status : 500;
+                    res.end();
+                    next();
+                });
     });
 
     // Check session middle ware
     app.all("*", (req: Request, res: Response, next: NextFunction) => {
         if ( !res.writableEnded ) {
-            const sessionCookie = req.cookies.token;
+            /*const sessionCookie = req.cookies.token;
             if ( !sessionCookie ) {
                 console.warn("USER_ERR on authentification : No session cookie provided)");
                 res.statusCode = 403;
@@ -108,14 +122,28 @@ export function install(app: Express): void {
             expire.setHours(expire.getHours() + 12);
             res.cookie("token", { username: username, session: session }, { httpOnly: true, expires: expire });
             // Set username from session for other middlewares
-            req.body.username = username;
+            req.body.username = username;*/
+
+            axios.post(BACKFRONT_BASEURL + "/isTokenValid", req.cookies.token, {headers: {"Content-Type": "application/json"}})
+                    .then((ares) => {
+                        req.body.username = ares.data.username;
+                        const expire = new Date();
+                        expire.setHours(expire.getHours() + 12);
+                        res.cookie("token", req.cookies.token, { httpOnly: true, expires: expire });
+                        next();
+                    }).catch((error: Error | AxiosError) => {
+                        res.cookie("token", undefined);
+                        res.statusCode = (axios.isAxiosError(error) && error.status) ? error.status : 500;
+                        res.end();
+                        next("auth error");
+                    });
+        } else {
+            next();
         }
-        next();
     });
 
     app.get("/disconnect", (req: Request, res: Response, next: NextFunction) => {
-        const username: string = req.body.username;
-        clearSession(username);
+        res.cookie("token", undefined);
         res.statusCode = 204;
         res.end();
         next();
@@ -127,39 +155,4 @@ export function install(app: Express): void {
         res.end(JSON.stringify({ username: req.body.username }));
         next();
     });
-}
-
-function getLogin(username: string): string | undefined {
-    if ( ! fs.existsSync(LOGIN_SAVE) )
-        fs.mkdirSync(LOGIN_SAVE, {recursive: true});
-    if ( fs.readdirSync(LOGIN_SAVE).indexOf(username + DB_EXT) < 0 )
-        return undefined;
-    return fs.readFileSync(LOGIN_SAVE + username + DB_EXT, "utf8");
-}
-
-function createLogin(username: string, password: string): void {
-    if ( ! fs.existsSync(LOGIN_SAVE) )
-        fs.mkdirSync(LOGIN_SAVE, {recursive: true});
-    fs.writeFileSync(LOGIN_SAVE + username + DB_EXT, hash(password), "utf8");
-}
-
-function createSession(username: string): string {
-    const session = randHex(32);
-    if ( ! fs.existsSync(SESSION_SAVE) )
-        fs.mkdirSync(SESSION_SAVE, {recursive: true});
-    fs.writeFileSync(SESSION_SAVE + username + DB_EXT, session, "utf8");
-    return session;
-}
-
-function getSession(username: string): string | undefined {
-    if ( ! fs.existsSync(SESSION_SAVE) )
-        fs.mkdirSync(SESSION_SAVE, {recursive: true});
-    if ( fs.readdirSync(SESSION_SAVE).indexOf(username + DB_EXT) < 0 )
-        return undefined;
-    return fs.readFileSync(SESSION_SAVE + username + DB_EXT, "utf8");
-}
-
-function clearSession(username: string): void {
-    if ( fs.existsSync(SESSION_SAVE + username + DB_EXT) )
-        fs.rmSync(SESSION_SAVE + username + DB_EXT);
 }
